@@ -1,35 +1,39 @@
 // The Cloud Functions for Firebase SDK to create Cloud Functions and setup triggers.
 const functions = require('firebase-functions');
-
-// The Firebase Admin SDK to access the Firebase Realtime Database.
+const TinEye = require('tineye-api');
 const admin = require('firebase-admin');
 admin.initializeApp();
 
-const TinEye = require('tineye-api');
+// The Firebase Admin SDK to access the Firebase Realtime Database.
+const credentials = functions.config().tineye;
+console.log(credentials.pub);
 
-exports.searchResultsGet = functions.https.onRequest(async(req, res) => {
-    const publicSandboxKey = 'LCkn,2K7osVwkX95K4O';
-    const privateSandboxKey = '6mm60lsCNIB,FwOWjJqA80QZHh9BMwc-ber4u=t^';
+const api = new TinEye(
+    `https://api.tineye.com/rest/,${credentials.priv},${credentials.pub}`
+);
+
+exports.searchResults = functions.https.onCall(() => {
+    // const userId = context.auth.uid;
+    // const userRef = db.doc(`users/${userId}`)
+    // const userSnap = await userRef.get();
     const params = {
         offset: 0,
         limit: 10,
         sort: 'score',
         order: 'desc',
     };
-    const api = new TinEye(
-        `https://api.tineye.com/rest/${publicSandboxKey},${privateSandboxKey}`
-    );
+
     // const url = req.query.text;
     const url = 'https://tineye.com/images/meloncat.jpg';
-    api
+    return api
         .searchUrl(url, params)
         .then(function(response) {
             console.log(response);
-            res.json(response);
+            // res(response);
         })
         .catch(function(error) {
             console.log(error);
-            res.json(error);
+            // res.json(error);
         });
 });
 // api
